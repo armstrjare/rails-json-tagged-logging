@@ -34,7 +34,8 @@ if Rails.env.development?
     broadcast_logger.formatter = config.logger.formatter
   end
 
-  # Broadcast to STDOUT with the standard formatter
+  # Broadcast to STDOUT with the standard formatter. This will look like your normal Rails logs
+  # in development mode going to STDOUT.
   config.logger.broadcast_to ActiveSupport::Logger.new(STDOUT).then { |logger|
     ActiveSupport::TaggedLogging.new(logger)
   }
@@ -43,28 +44,48 @@ end
 
 ## Usage
 
-A basic message will log JSON output with the message in the "msg" field:
 ```ruby
+# A basic message will log JSON output with the message in the "message" field:
+logger = JSONTaggedLogging.new(ActiveSupport::Logger.new(log_device))
 logger.info "Hello, world!"
 ```
 ```json
-{ "level": "INFO", "msg": "Hello, world!" }
+{ "level": "INFO", "message": "Hello, world!" }
 ```
 
-Adding traditional Rails tags will add them to the tags field:
 ```ruby
+# Adding `tagged` logs will add them to a `tags` array:
 logger.tagged("ActiveJob").info "Hello, world!"
 ```
 ```json
 { "level": "INFO", "tags": ["ActiveJob"], "msg": "Hello, world!" }
 ```
 
-Using a Hash for tags merges them into the JSON log entry:
+There is also a special Formatter called `JSONTaggedLogging::JSONFormatter` that will:
+
+1. Merge tags into the root of the JSON log entry when they are Hashes
+2. Extract String notation tags like `dd.trace_id=abcdef` and add them to the JSON log entry as ```{ "dd": { "trace_id": "abcdef" } }```
+
 ```ruby
-logger.tagged(service: "Authentication").tagged(usr: { id: 123, name: "Jared" }).info "Hello, world!"
+# To use this Formatter, set it as the formatter when initializing your logger:
+logger = ActiveSupport::Logger.new(log_device).tap do |logger|
+  logger.formatter = JSONTaggedLogging::JSONFormatter.new
+end.then { |logger| JSONTaggedLogging.new(logger) }
+
+# Using a Hash for tags merges them into the root of the JSON log entry:
+logger.tagged("dd.trace_id=1234567890 dd.span_id=1234567890")
+  .tagged("ActiveJob")
+  .tagged(service: "Authentication")
+  .tagged(usr: { id: 123, name: "Jared" })
+  .info "Hello, world!"
 ```
 ```json
-{ "level": "INFO", "service": "Authentication", "usr": { "id": 123, "name": "Jared" }, "msg": "Hello, world!" }
+{ "level": "INFO",
+  "tags": ["ActiveJob"],
+  "dd": { "trace_id": "1234567890", "span_id": "1234567890" },
+  "service": "Authentication",
+  "usr": { "id": 123, "name": "Jared" },
+  "message": "Hello, world!" }
 ```
 ## Development
 
