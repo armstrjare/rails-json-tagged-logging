@@ -5,6 +5,7 @@ require_relative "json_tagged_logging/version"
 require_relative "json_tagged_logging/activesupport_patch"
 require_relative "json_tagged_logging/json_formatter"
 require_relative "json_tagged_logging/railtie"
+require_relative "json_tagged_logging/tagged_broadcast_logger"
 
 # = JSON Tagged Logging for Rails
 #

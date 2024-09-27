@@ -23,12 +23,15 @@ config.logger = ActiveSupport::Logger.new(log_device)
 ```
 
 If you want to output Rails logs with the standard format aswell (eg. in development), use
-a ActiveSupport::Broadcast logger:
+a `JSONTaggedLogging::TaggedBroadcastLogger`.
+This logger is a subclass of `ActiveSupport::BroadcastLogger` that also supports the `tagged` method.
+
+> (NB: `ActiveSupport::BroadcastLogger` has issues with `tagged` logging with a block. See: https://github.com/rails/rails/pull/49771#issuecomment-2378382227)
 
 ```ruby
 if Rails.env.development?
   # Initialize BroadcastLogger
-  config.logger = ActiveSupport::BroadcastLogger.new(config.logger).tap do |broadcast_logger|
+  config.logger = JSONTaggedLogging::TaggedBroadcastLogger.new(config.logger).tap do |broadcast_logger|
     # ActiveSupport::BroadcastLogger does not set the formatter on initialization.
     # We need to set it manually because otherwise ActiveJob tagged logging will break.
     broadcast_logger.formatter = config.logger.formatter
