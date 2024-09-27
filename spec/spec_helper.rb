@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "rails"
 require "json_tagged_logging"
 
 RSpec.configure do |config|

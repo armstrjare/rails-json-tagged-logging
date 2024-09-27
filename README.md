@@ -1,27 +1,71 @@
 # JsonTaggedLogging
 
-WIP
+Structured logging with JSON formatted output makes it easy to search and analyze logs. Frustratingly, ActiveSupport::TaggedLogging interferes with this by converting your log messages to a String which breaks structured logging.
 
-TODO: Delete this and the text below, and describe your gem
+This library adds an extension for ActiveSupport::TaggedLogging that allows
+structured logging without interfering with standard Rails logging and tagging.
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/json_tagged_logging`. To experiment with that code, run `bin/console` for an interactive prompt.
+## Setup
 
-## Installation
+Add the gem to your Gemfile:
+```
+gem 'json_tagged_logging', git: 'git://github.com/armstrjare/rails-json-tagged-logging.git'
+```
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+In your `config/application.rb` file (or where you configure your logger), change
+your Logger initializer to use `JsonTaggedLogging::TaggedLogging`.
 
-Install the gem and add to the application's Gemfile by executing:
+```ruby
+# Log with our JSON format
+config.logger = ActiveSupport::Logger.new(log_device)
+  .tap  { |logger| logger.formatter = JSONTaggedLogging::JSONFormatter.new }
+  .then { |logger| JSONTaggedLogging.new(logger) }
+```
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+If you want to output Rails logs with the standard format aswell (eg. in development), use
+a ActiveSupport::Broadcast logger:
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+```ruby
+if Rails.env.development?
+  # Initialize BroadcastLogger
+  config.logger = ActiveSupport::BroadcastLogger.new(config.logger).tap do |broadcast_logger|
+    # ActiveSupport::BroadcastLogger does not set the formatter on initialization.
+    # We need to set it manually because otherwise ActiveJob tagged logging will break.
+    broadcast_logger.formatter = config.logger.formatter
+  end
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+  # Broadcast to STDOUT with the standard formatter
+  config.logger.broadcast_to ActiveSupport::Logger.new(STDOUT).then { |logger|
+    ActiveSupport::TaggedLogging.new(logger)
+  }
+end
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+A basic message will log JSON output with the message in the "msg" field:
+```ruby
+logger.info "Hello, world!"
+```
+```json
+{ "level": "INFO", "msg": "Hello, world!" }
+```
 
+Adding traditional Rails tags will add them to the tags field:
+```ruby
+logger.tagged("ActiveJob").info "Hello, world!"
+```
+```json
+{ "level": "INFO", "tags": ["ActiveJob"], "msg": "Hello, world!" }
+```
+
+Using a Hash for tags merges them into the JSON log entry:
+```ruby
+logger.tagged(service: "Authentication").tagged(usr: { id: 123, name: "Jared" }).info "Hello, world!"
+```
+```json
+{ "level": "INFO", "service": "Authentication", "usr": { "id": 123, "name": "Jared" }, "msg": "Hello, world!" }
+```
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

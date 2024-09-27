@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_support/tagged_logging"
+require "active_support"
 require_relative "json_tagged_logging/version"
 require_relative "json_tagged_logging/activesupport_patch"
 require_relative "json_tagged_logging/json_formatter"
