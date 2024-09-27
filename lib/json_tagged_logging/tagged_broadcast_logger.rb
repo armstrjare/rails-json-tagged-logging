@@ -9,7 +9,6 @@ module JSONTaggedLogging
             block
           end
         end.call
-        self
       else
         loggers = broadcasts.map { |logger|
           logger.respond_to?(:tagged) ? logger.tagged(*tags) : logger

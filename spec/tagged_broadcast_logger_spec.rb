@@ -27,8 +27,8 @@ RSpec.describe JSONTaggedLogging::TaggedBroadcastLogger do
 
   describe '#tagged' do
     describe 'with a block' do
-      it 'returns the broadcast logger' do
-        expect(logger.tagged('foo', 'bar') { }).to be(logger)
+      it 'returns the block value' do
+        expect(logger.tagged('foo', 'bar') { :abc }).to be(:abc)
       end
 
       it 'yields the broadcast logger' do
