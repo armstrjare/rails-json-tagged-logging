@@ -6,11 +6,11 @@ Gem::Specification.new do |spec|
   spec.name = "json_tagged_logging"
   spec.version = JsonTaggedLogging::VERSION
   spec.authors = ["Jared Armstrong"]
-  spec.email = ["jared.armstrong@gmail.com"]
+  spec.email = []
 
   spec.summary = "Ability to tag log messages for JSON output in Rails"
   # spec.description = "TODO: Write a longer description or delete this line."
-  # spec.homepage = "TODO: Put your gem's website or public repo URL here."
+  spec.homepage = nil
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
