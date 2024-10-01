@@ -75,12 +75,13 @@ logger = ActiveSupport::Logger.new(log_device).tap do |logger|
   logger.formatter = JSONTaggedLogging::JSONFormatter.new
 end.then { |logger| JSONTaggedLogging.new(logger) }
 
-# Using a Hash for tags merges them into the root of the JSON log entry:
+# Using a Hash for tags and structured log messages
+# merges them into the root of the JSON log entry:
 logger.tagged("dd.trace_id=1234567890 dd.span_id=1234567890")
   .tagged("ActiveJob")
   .tagged(service: "Authentication")
   .tagged(usr: { id: 123, name: "Jared" })
-  .info "Hello, world!"
+  .info(job_status: { completed: true }, message: "Job completed successfully")
 ```
 ```json
 { "level": "INFO",
@@ -88,7 +89,8 @@ logger.tagged("dd.trace_id=1234567890 dd.span_id=1234567890")
   "dd": { "trace_id": "1234567890", "span_id": "1234567890" },
   "service": "Authentication",
   "usr": { "id": 123, "name": "Jared" },
-  "message": "Hello, world!" }
+  "job_status": { "completed": true },
+  "message": "Job completed successfully" }
 ```
 ## Development
 
