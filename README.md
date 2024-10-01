@@ -26,7 +26,7 @@ If you want to output Rails logs with the standard format aswell (eg. in develop
 a `JSONTaggedLogging::TaggedBroadcastLogger`.
 This logger is a subclass of `ActiveSupport::BroadcastLogger` that also supports the `tagged` method.
 
-> (NB: `ActiveSupport::BroadcastLogger` has issues with `tagged` logging with a block. See: https://github.com/rails/rails/pull/49771#issuecomment-2378382227)
+> (NB: `ActiveSupport::BroadcastLogger` has issues with `tagged` logging with a block. I have open pull requests to Rails to fix this: https://github.com/rails/rails/pull/53105 https://github.com/rails/rails/pull/53093)
 
 ```ruby
 if Rails.env.development?
