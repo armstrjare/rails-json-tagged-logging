@@ -22,6 +22,23 @@ module JSONTaggedLogging
   # An extension applied to a log formatter to present the log message as a
   # Hash with the appropriate tags.
   module Formatter
+    def self.extended(formatter)
+      # The TaggedLogging::Formatter module defines a `tags_text` method that allows you to
+      # read the current tags as pre-formatted string prefix for an empty log message. There
+      # is one place in the Rails codebase where this is used, in the strack trace
+      # formatting when logging an exception, where it will prefix each stack trace line
+      # with the traditionally formatted tags text. We don't want to use this method in the
+      # JSON formatter, so we undefine it for the formatter instance.
+      #
+      # For reading the current tags, the `current_tags` method should be used.
+      #
+      # @see https://github.com/rails/rails/blob/v8.0.0/actionpack/lib/action_dispatch/middleware/debug_exceptions.rb#L177
+      # @see https://github.com/rails/rails/blob/v8.0.0/activesupport/lib/active_support/tagged_logging.rb#L65
+      class << formatter
+        undef_method :tags_text
+      end if formatter.respond_to?(:tags_text)
+    end
+
     def call(severity, timestamp, progname, msg)
       msg = current_tags.empty? ? msg : Hash.new.tap do |json|
         json[:tags] = current_tags.dup

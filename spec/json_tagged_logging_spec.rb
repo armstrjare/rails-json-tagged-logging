@@ -147,4 +147,11 @@ RSpec.describe JSONTaggedLogging do
       expect(log_device.string).to eq({ tags: ["foo", "bar"], message: 'baz'}.to_json + "\n")
     end
   end
+
+  describe '#tags_text' do
+    it 'has been undefined' do
+      expect(subject.respond_to?(:tags_text)).to be(false)
+    end
+  end
 end
+
